@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-);
-
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     const { name, role } = await req.json();
     if (!name && !role) {
       return NextResponse.json({ error: "Tidak ada perubahan" }, { status: 400 });
@@ -41,6 +36,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 
 export async function DELETE(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     const { id } = await context.params;
     const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
