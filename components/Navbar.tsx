@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { BookOpen, Menu, X, User, LogOut, LayoutDashboard } from "lucide-react";
+import { BookOpen, Menu, X, User, LogOut, LayoutDashboard, Bookmark } from "lucide-react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,6 +41,7 @@ export default function Navbar() {
     { href: "/", label: "Beranda" },
     { href: "/katalog", label: "Katalog" },
     { href: "/pencarian", label: "Pencarian" },
+    { href: "/bookmarks", label: "Bookmark", icon: Bookmark },
   ];
 
   const handleLogout = async () => {
@@ -50,9 +51,8 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`sticky top-0 z-50 bg-[#0a2540] text-white transition-all duration-300 ${
-          isScrolled ? "shadow-lg py-3" : "py-4"
-        }`}
+        className={`sticky top-0 z-50 bg-[#0a2540] text-white transition-all duration-300 ${isScrolled ? "shadow-lg py-3" : "py-4"
+          }`}
       >
         <div className="container mx-auto px-6">
           <div className="flex justify-between items-center">
@@ -72,12 +72,18 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-4 py-2 rounded-md transition-all font-medium ${
-                    isActive(link.href)
+                  prefetch={true}
+                  className={`px-4 py-2 rounded-md transition-all font-medium flex items-center gap-1.5 ${isActive(link.href)
                       ? "bg-[#f97316] text-white"
                       : "hover:bg-white/10"
-                  }`}
+                    }`}
                 >
+                  {link.icon && (
+                    <link.icon
+                      className={`w-4 h-4 ${isActive(link.href) ? "fill-current" : ""
+                        }`}
+                    />
+                  )}
                   {link.label}
                 </Link>
               ))}
@@ -142,9 +148,8 @@ export default function Navbar() {
       )}
 
       <div
-        className={`fixed top-[72px] right-0 h-[calc(100vh-72px)] w-80 max-w-[85vw] bg-[#0a2540] z-40 transform transition-transform duration-300 ease-in-out md:hidden ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-[72px] right-0 h-[calc(100vh-72px)] w-80 max-w-[85vw] bg-[#0a2540] z-40 transform transition-transform duration-300 ease-in-out md:hidden ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex flex-col h-full">
           <div className="flex-1 overflow-y-auto py-6 px-6">
@@ -153,12 +158,18 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`block px-4 py-3 rounded-md transition-all font-medium ${
-                    isActive(link.href)
+                  prefetch={true}
+                  className={`flex items-center gap-2.5 px-4 py-3 rounded-md transition-all font-medium ${isActive(link.href)
                       ? "bg-[#f97316] text-white"
                       : "hover:bg-white/10 text-white"
-                  }`}
+                    }`}
                 >
+                  {link.icon && (
+                    <link.icon
+                      className={`w-4 h-4 ${isActive(link.href) ? "fill-current" : ""
+                        }`}
+                    />
+                  )}
                   {link.label}
                 </Link>
               ))}

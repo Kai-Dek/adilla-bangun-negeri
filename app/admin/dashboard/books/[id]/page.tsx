@@ -71,6 +71,8 @@ export default function BookDetail() {
     }
   }, [params.id, router]);
 
+  const [deletingBookmarkId, setDeletingBookmarkId] = useState<string | null>(null);
+
   const handleDelete = async () => {
     if (!confirm("Apakah Anda yakin ingin menghapus buku ini?")) return;
 
@@ -89,6 +91,38 @@ export default function BookDetail() {
     } catch (error) {
       console.error("Error deleting book:", error);
       alert("Terjadi kesalahan saat menghapus buku");
+    }
+  };
+
+  const handleDeleteBookmark = async (bookmarkId: string, userName: string | null) => {
+    if (!confirm(`Hapus status bookmark user "${userName || 'User'}" dari buku ini?`)) return;
+
+    setDeletingBookmarkId(bookmarkId);
+    try {
+      const res = await fetch("/api/bookmarks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookmarkId }),
+      });
+
+      if (res.ok) {
+        setBook((prev) =>
+          prev
+            ? {
+                ...prev,
+                bookmarks: prev.bookmarks.filter((b) => b.id !== bookmarkId),
+              }
+            : null
+        );
+      } else {
+        const data = await res.json();
+        alert(data.error || "Gagal menghapus bookmark");
+      }
+    } catch (error) {
+      console.error("Error deleting bookmark:", error);
+      alert("Terjadi kesalahan saat menghapus bookmark");
+    } finally {
+      setDeletingBookmarkId(null);
     }
   };
 
@@ -280,17 +314,26 @@ export default function BookDetail() {
                       key={bookmark.id}
                       className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50"
                     >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 flex-shrink-0">
                         <User className="h-5 w-5 text-blue-600" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
                           {bookmark.user.name || "User"}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 truncate">
                           {bookmark.user.email}
                         </p>
                       </div>
+                      <button
+                        onClick={() => handleDeleteBookmark(bookmark.id, bookmark.user.name)}
+                        disabled={deletingBookmarkId === bookmark.id}
+                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-md transition flex items-center gap-1 text-xs font-medium border border-transparent hover:border-red-200 disabled:opacity-50"
+                        title="Hapus Bookmark User Ini"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span className="hidden sm:inline">Hapus</span>
+                      </button>
                     </div>
                   ))}
                 </div>

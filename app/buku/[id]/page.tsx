@@ -14,30 +14,22 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import ShareButton from "@/components/ShareButton";
+import { cache } from "react";
 
 interface BookDetailPageContext {
   params: Promise<{ id: string }>;
 }
 
-async function getBook(id: string) {
+const getBook = cache(async (id: string) => {
   try {
     const book = await prisma.book.findUnique({
       where: { id },
-      include: {
-        bookmarks: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true },
-            },
-          },
-        },
-      },
     });
     return book;
   } catch {
     return null;
   }
-}
+});
 
 export default async function BookDetailPage({ params }: BookDetailPageContext) {
   const { id } = await params;

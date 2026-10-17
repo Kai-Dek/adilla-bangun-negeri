@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import BookCard from "@/components/BookCard";
@@ -12,19 +13,26 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+import type { Book } from "@prisma/client";
+interface HomeCategory {
+  name: string | null;
+  count: number;
+}
+interface HomeData {
+  latestBooks: Book[];
+  totalBooks: number;
+  categories: HomeCategory[];
+}
 
 // Fetch data di server side
-async function getHomeData() {
+async function getHomeData(): Promise<HomeData> {
   try {
     const [latestBooks, totalBooks, categories] = await Promise.all([
-      // Get 8 latest books
       prisma.book.findMany({
         take: 8,
         orderBy: { createdAt: "desc" },
       }),
-      // Get total books count
       prisma.book.count(),
-      // Get unique categories with count
       prisma.book.groupBy({
         by: ["category"],
         _count: {
@@ -37,7 +45,6 @@ async function getHomeData() {
         },
       }),
     ]);
-
     return {
       latestBooks,
       totalBooks,
@@ -141,33 +148,34 @@ export default async function Home() {
                 {topCategories.map((category, index) => {
                   const safeName = category.name ?? "Lainnya";
                   return (
-                  <Link
-                    key={index}
-                    href={`/katalog?category=${encodeURIComponent(
-                      safeName
-                    )}`}
-                    className="group"
-                  >
-                    <div className="bg-gradient-to-br from-[#f97316] to-[#ea580c] rounded-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                      <div className="flex items-center justify-between mb-4">
-                        <BookOpen className="w-8 h-8 text-white" />
-                        <span className="bg-white/20 text-white text-sm px-3 py-1 rounded-full font-medium">
-                          {category.count} buku
-                        </span>
+                    <Link
+                      key={index}
+                      href={`/katalog?category=${encodeURIComponent(
+                        safeName
+                      )}`}
+                      className="group"
+                    >
+                      <div className="bg-gradient-to-br from-[#f97316] to-[#ea580c] rounded-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="flex items-center justify-between mb-4">
+                          <BookOpen className="w-8 h-8 text-white" />
+                          <span className="bg-white/20 text-white text-sm px-3 py-1 rounded-full font-medium">
+                            {category.count} buku
+                          </span>
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">
+                          {safeName}
+                        </h3>
+                        <p className="text-white/80 text-sm mb-4">
+                          Temukan buku {safeName.toLowerCase()}
+                        </p>
+                        <div className="flex items-center text-white font-medium group-hover:gap-2 transition-all">
+                          Jelajahi
+                          <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-2">
-                        {safeName}
-                      </h3>
-                      <p className="text-white/80 text-sm mb-4">
-                        Temukan buku {safeName.toLowerCase()}
-                      </p>
-                      <div className="flex items-center text-white font-medium group-hover:gap-2 transition-all">
-                        Jelajahi
-                        <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-                  </Link>
-                );})}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -283,5 +291,3 @@ export default async function Home() {
   );
 }
 
-// Revalidate every hour
-export const revalidate = 3600;

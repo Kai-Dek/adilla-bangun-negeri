@@ -14,22 +14,26 @@ export default function BookmarkButtonWrapper({ bookId }: BookmarkButtonWrapperP
 
   const checkBookmarkStatus = useCallback(async () => {
     try {
-      const response = await fetch(`/api/bookmarks?bookId=${bookId}`);
+      const response = await fetch(`/api/bookmarks?bookId=${bookId}`, {
+        cache: "no-store",
+      });
       if (response.ok) {
         const data = await response.json();
         setIsBookmarked(data.isBookmarked || false);
       }
     } catch (error) {
-      console.error('Error checking bookmark status:', error);
+      console.error("Error checking bookmark status:", error);
     }
   }, [bookId]);
 
   // Check if user has bookmarked this book
   useEffect(() => {
-    if (session?.user?.id) {
+    if (session?.user) {
       checkBookmarkStatus();
+    } else {
+      setIsBookmarked(false);
     }
-  }, [session?.user?.id, checkBookmarkStatus]);
+  }, [session?.user, checkBookmarkStatus]);
 
   return (
     <BookmarkButton 
@@ -39,3 +43,4 @@ export default function BookmarkButtonWrapper({ bookId }: BookmarkButtonWrapperP
     />
   );
 }
+
